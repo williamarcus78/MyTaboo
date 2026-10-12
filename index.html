@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Love &amp; Respect Taboo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen party game — scoreboard on top, a big playing card in the middle, thumb-sized controls under it. Two suits: Love (rose) and Respect (cobalt). */
+:root {
+  --bg: #ECEEF3;
+  --surface: #FFFFFF;
+  --ink: #171A26;
+  --muted: #5B6072;
+  --line: #D5D8E2;
+  --love: #C8304A;
+  --love-soft: #FBE7EA;
+  --respect: #2B55C9;
+  --respect-soft: #E4EBFC;
+  --sample: #4A5068;
+  --sample-soft: #E6E8EF;
+  --good: #18825A;
+  --buzz: #D9660B;
+  --shadow: 0 1px 0 rgba(23,26,38,.06), 0 18px 40px -18px rgba(23,26,38,.35);
+  --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11131B; --surface: #1C1F2B; --ink: #EEF0F6; --muted: #A2A7B8; --line: #2E3242;
+    --love: #F0627A; --love-soft: #3A1C25; --respect: #7C9BFF; --respect-soft: #1C2647; --sample: #454B63; --sample-soft: #262A38;
+    --good: #3CC48C; --buzz: #F59A3D;
+    --shadow: 0 1px 0 rgba(0,0,0,.4), 0 18px 40px -18px rgba(0,0,0,.8);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11131B; --surface: #1C1F2B; --ink: #EEF0F6; --muted: #A2A7B8; --line: #2E3242;
+  --love: #F0627A; --love-soft: #3A1C25; --respect: #7C9BFF; --respect-soft: #1C2647; --sample: #454B63; --sample-soft: #262A38;
+  --good: #3CC48C; --buzz: #F59A3D;
+  --shadow: 0 1px 0 rgba(0,0,0,.4), 0 18px 40px -18px rgba(0,0,0,.8);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45; }
+.wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: flex; flex-direction: column; gap: 18px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--respect); outline-offset: 2px; }
+
+/* Header + scoreboard */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { font-family: var(--display); font-weight: 900; font-size: 1.05rem; letter-spacing: -.01em; line-height: 1.1; }
+.brand .amp { color: var(--love); }
+.brand .r { color: var(--respect); }
+.navbtns { display: flex; gap: 6px; }
+.ghost { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: .85rem; color: var(--muted); }
+.ghost:hover { color: var(--ink); border-color: var(--muted); }
+.board { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.team { background: var(--surface); border: 2px solid transparent; border-radius: 14px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-width: 0; }
+.team.active { border-color: var(--ink); }
+.team .nm { font-weight: 700; font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.team .pts { font-family: var(--display); font-weight: 700; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.team .up { font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; font-weight: 400; }
+
+/* The card */
+.stage { position: relative; display: grid; place-items: center; padding-block: 6px; }
+.card { width: 100%; max-width: 360px; aspect-ratio: 5 / 7; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.card .suit { --c: var(--love); --soft: var(--love-soft); }
+.card.respect .suit { --c: var(--respect); --soft: var(--respect-soft); }
+.card { --c: var(--love); --soft: var(--love-soft); }
+.card.respect { --c: var(--respect); --soft: var(--respect-soft); }
+.card.sample { --c: var(--sample); --soft: var(--sample-soft); }
+.card-head { background: var(--c); color: #fff; padding: 22px 20px 26px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+.card-head .meta { display: flex; justify-content: space-between; align-items: center; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; opacity: .92; }
+.card-head .meta svg { width: 18px; height: 18px; fill: currentColor; }
+.word { font-family: var(--display); font-weight: 900; font-size: clamp(1.6rem, 7.4vw, 2.3rem); line-height: 1.05; letter-spacing: -.02em; text-wrap: balance; overflow-wrap: anywhere; }
+.card-body { flex: 1; padding: 18px 22px 20px; display: flex; flex-direction: column; gap: 8px; background:
+  repeating-linear-gradient(135deg, transparent 0 14px, var(--soft) 14px 15px); }
+.card-body .lbl { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.taboo { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; flex: 1; justify-content: space-evenly; }
+.taboo li { font-weight: 700; font-size: 1.22rem; padding: 6px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+.taboo li::before { content: ""; width: 14px; height: 2px; background: var(--c); flex: none; }
+.card-foot { position: absolute; right: 16px; bottom: 12px; font-size: .7rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sub { font-family: var(--display); font-weight: 700; font-size: .95rem; margin: 6px 0 0; padding-top: 16px; border-top: 1px solid var(--line); }
+.example { background: var(--bg); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; font-size: .95rem; }
+.example .tag { display: inline-block; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: #fff; padding: 2px 8px; border-radius: 999px; margin-right: 8px; vertical-align: 1px; }
+.example .ok { background: var(--good); } .example .no { background: var(--buzz); }
+.panel .stage { padding-block: 14px 4px; }
+.sample-tag { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; padding: 4px 10px; border-radius: 999px; z-index: 2; }
+.card.enter { animation: deal .28s cubic-bezier(.2,.8,.2,1); }
+@keyframes deal { from { transform: translateY(14px) rotate(-1.5deg); opacity: .4; } to { transform: none; opacity: 1; } }
+.flash-good { animation: fg .35s; } .flash-buzz { animation: fb .45s; }
+@keyframes fg { 0% { box-shadow: 0 0 0 0 var(--good); } 100% { box-shadow: 0 0 0 18px transparent; } }
+@keyframes fb { 0%,100% { transform: none; } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+
+/* Timer + controls */
+.timer { display: flex; align-items: center; gap: 12px; }
+.bar { flex: 1; height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 100%; background: var(--ink); border-radius: inherit; transform-origin: left; }
+.bar.low i { background: var(--buzz); }
+.secs { font-family: var(--display); font-weight: 700; font-size: 1.4rem; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+.controls { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 10px; }
+.btn { border: 0; border-radius: 16px; padding: 16px 10px; font-weight: 700; font-size: 1.02rem; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: transform .08s; }
+.btn:active { transform: scale(.97); }
+.btn small { font-weight: 400; font-size: .72rem; opacity: .8; }
+.btn.skip { background: var(--surface); border: 1px solid var(--line); }
+.btn.got { background: var(--good); color: #fff; }
+.btn.bz { background: var(--buzz); color: #fff; }
+.primary { background: var(--ink); color: var(--bg); border: 0; border-radius: 16px; padding: 16px 20px; font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: -.01em; width: 100%; }
+.primary:hover { filter: brightness(1.1); }
+.kbd { text-align: center; font-size: .78rem; color: var(--muted); }
+.kbd kbd { font-family: inherit; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface); }
+@media (hover: none) { .kbd { display: none; } }
+
+/* Panels */
+.panel { background: var(--surface); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.panel h2 { font-family: var(--display); font-weight: 700; font-size: 1.15rem; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.panel p { margin: 0; color: var(--muted); }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > span { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { flex: 1 1 auto; background: transparent; border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; font-weight: 700; font-size: .92rem; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.names { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+input[type="text"] { width: 100%; min-width: 0; font: inherit; font-weight: 700; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.rules { margin: 0; padding-left: 1.2em; color: var(--muted); display: flex; flex-direction: column; gap: 4px; font-size: .92rem; }
+.rules b { color: var(--ink); }
+.big { font-family: var(--display); font-weight: 900; font-size: 2.6rem; line-height: 1; letter-spacing: -.02em; }
+.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; }
+.log li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 8px; background: var(--bg); font-weight: 700; }
+.log li span { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; }
+.log .g { color: var(--good); } .log .b { color: var(--buzz); } .log .s { color: var(--muted); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > * { flex: 1 1 140px; }
+.secondary { background: transparent; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; font-weight: 700; }
+
+/* Deck list */
+.decklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.mini { border-radius: 12px; overflow: hidden; background: var(--bg); font-size: .82rem; min-width: 0; }
+.mini b { display: block; padding: 7px 10px; color: #fff; background: var(--love); font-weight: 700; }
+.mini.respect b { background: var(--respect); }
+.mini div { padding: 7px 10px; color: var(--muted); line-height: 1.35; }
+.deckhead { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 700; font-size: .95rem; }
+.deckhead svg { width: 16px; height: 16px; }
+@media (prefers-reduced-motion: reduce) { .card.enter, .flash-good, .flash-buzz { animation: none; } }
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app">
+  <header class="top">
+    <div class="brand">Love <span class="amp">&amp;</span> <span class="r">Respect</span><br>Taboo</div>
+    <div class="navbtns">
+      <button class="ghost" id="restartBtn" type="button" hidden>Restart</button>
+      <button class="ghost" id="soundBtn" type="button" aria-pressed="true">Sound on</button>
+      <button class="ghost" id="deckBtn" type="button">All 50 cards</button>
+    </div>
+  </header>
+  <section class="board" aria-label="Scoreboard">
+    <div class="team" id="t0"><div class="nm"><span class="up">Team 1 · Love for Her</span><span id="n0">Husbands</span></div><div class="pts" id="s0">0</div></div>
+    <div class="team" id="t1"><div class="nm"><span class="up">Team 2 · Respect for Him</span><span id="n1">Wives</span></div><div class="pts" id="s1">0</div></div>
+  </section>
+  <main id="screen"></main>
+</div>
+
+<script>
+const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.3 2.4h2c.7-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>';
+const BOW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 16.8 6.1 20.1l1.3-6.6L2.5 8.9l6.6-.8z"/></svg>';
+
+const LOVE = [
+  ["Date Night", ["Dinner", "Movie", "Out", "Babysitter", "Romantic"]],
+  ["Flowers", ["Roses", "Bouquet", "Florist", "Vase", "Smell"]],
+  ["Love Note", ["Write", "Paper", "Letter", "Sticky", "Message"]],
+  ["Holding Hands", ["Fingers", "Walk", "Palm", "Grab", "Hold"]],
+  ["Doing the Dishes", ["Sink", "Soap", "Kitchen", "Plates", "Wash"]],
+  ["Listening Without Fixing", ["Advice", "Solve", "Ears", "Problem", "Hear"]],
+  ["Saying I Love You", ["Three words", "Say", "Heart", "Tell", "Feelings"]],
+  ["Remembering Your Anniversary", ["Wedding", "Date", "Forget", "Calendar", "Year"]],
+  ["Planning a Surprise", ["Secret", "Plan", "Shock", "Party", "Unexpected"]],
+  ["Back Rub", ["Massage", "Shoulders", "Hands", "Tense", "Relax"]],
+  ["Praying Together", ["God", "Amen", "Hands", "Bed", "Bow"]],
+  ["Putting the Kids to Bed", ["Bedtime", "Children", "Story", "Pajamas", "Sleep"]],
+  ["Telling Her She's Beautiful", ["Pretty", "Gorgeous", "Compliment", "Looks", "Cute"]],
+  ["Cooking Her Favorite Meal", ["Food", "Kitchen", "Dinner", "Chef", "Recipe"]],
+  ["Opening Her Car Door", ["Car", "Open", "Gentleman", "Passenger", "Seat"]],
+  ["Breakfast in Bed", ["Pancakes", "Tray", "Morning", "Coffee", "Pillow"]],
+  ["Asking About Her Day", ["How", "Work", "Talk", "Question", "Today"]],
+  ["Phone-Free Dinner", ["Cell", "Screen", "Table", "Put away", "Text"]],
+  ["Slow Dance", ["Music", "Sway", "Song", "Kitchen", "Wedding"]],
+  ["Weekend Getaway", ["Trip", "Hotel", "Travel", "Vacation", "Away"]],
+  ["Handling the Laundry", ["Clothes", "Wash", "Fold", "Dryer", "Basket"]],
+  ["Making Her Coffee", ["Mug", "Cream", "Sugar", "Wake up", "Cup"]],
+  ["Forgiving Quickly", ["Sorry", "Grudge", "Fight", "Let go", "Mistake"]],
+  ["Kiss Goodbye", ["Lips", "Leave", "Work", "Door", "Smooch"]],
+  ["Cuddling", ["Couch", "Snuggle", "Hug", "Blanket", "Close"]],
+];
+const RESPECT = [
+  ["Thanking Him for Working Hard", ["Job", "Provide", "Grateful", "Money", "Effort"]],
+  ["Praising Him in Public", ["Brag", "Proud", "Friends", "Show off", "Compliment"]],
+  ["Asking His Opinion", ["Think", "Advice", "Ask", "Decide", "Input"]],
+  ["Not Nagging", ["Remind", "Complain", "Repeat", "Bug", "Pester"]],
+  ["Trusting His Decision", ["Choose", "Faith", "Doubt", "Lead", "Trust"]],
+  ["Watching the Game With Him", ["Football", "TV", "Sports", "Couch", "Grizzlies"]],
+  ["Encouraging His Dreams", ["Goals", "Support", "Cheer", "Future", "Believe"]],
+  ["Letting Him Lead", ["Follow", "Head", "Guide", "Boss", "Front"]],
+  ["Welcoming Him Home", ["Door", "Work", "Greet", "Hug", "Back"]],
+  ["Giving Him Downtime", ["Alone", "Rest", "Relax", "Space", "Man cave"]],
+  ["Not Correcting Him in Public", ["Fix", "Wrong", "Embarrass", "People", "Crowd"]],
+  ["Saying I'm Proud of You", ["Proud", "Words", "Tell", "Accomplish", "Good job"]],
+  ["Noticing His Effort", ["See", "Try", "Work", "Appreciate", "Hard"]],
+  ["Guys' Night", ["Buddies", "Friends", "Boys", "Hang out", "Night out"]],
+  ["Admiring His Strength", ["Muscles", "Strong", "Lift", "Carry", "Flex"]],
+  ["Listening to His Ideas", ["Plan", "Hear", "Ears", "Think", "Share"]],
+  ["Laughing at His Jokes", ["Funny", "Humor", "Laugh", "Punchline", "Haha"]],
+  ["Fighting Fair", ["Argue", "Yell", "Tone", "Calm", "Rules"]],
+  ["Supporting His Hobbies", ["Fishing", "Golf", "Garage", "Fun", "Interest"]],
+  ["Honoring Him in Front of the Kids", ["Children", "Dad", "Talk", "Example", "Father"]],
+  ["Patience When He's Lost", ["Directions", "GPS", "Map", "Drive", "Wrong way"]],
+  ["Praying for Him", ["God", "Amen", "Ask", "Pray", "Bless"]],
+  ["Sticking to the Budget", ["Money", "Spend", "Save", "Plan", "Shopping"]],
+  ["Thanking Him for Fixing Things", ["Repair", "Tools", "Broken", "Handy", "Thanks"]],
+  ["Believing in Him", ["Trust", "Faith", "Confidence", "Doubt", "Support"]],
+];
+const CARDS = [
+  ...LOVE.map(([w, t], i) => ({ id: "L" + (i + 1), suit: "love", word: w, taboo: t })),
+  ...RESPECT.map(([w, t], i) => ({ id: "R" + (i + 1), suit: "respect", word: w, taboo: t })),
+];
+const byId = Object.fromEntries(CARDS.map(c => [c.id, c]));
+/* Practice card for teaching the game; not in either deck, so it gives nothing away */
+const SAMPLE = { id: "Sample", suit: "sample", word: "Sharing Dessert", taboo: ["Cake", "Split", "Spoon", "Sweet", "Bite"] };
+
+const fresh = () => ({
+  phase: "setup", seconds: 60, teams: ["Husbands", "Wives"],
+  scores: [0, 0], turn: 0, pile: { love: [], respect: [] }, current: null, log: [], timeLeft: 60, endAt: 0, sound: true, view: null,
+});
+let S = Object.assign(fresh(), window.claude?.hot?.data?.S || {});
+let tick = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+/* Team 1 (the men) always gets Love for Her cards; Team 2 (the ladies) always gets Respect for Him cards */
+const SUIT_FOR = ["love", "respect"];
+function buildPile(suit) { return shuffle(CARDS.filter(c => c.suit === suit).map(c => c.id)); }
+function draw() {
+  if (!S.pile || Array.isArray(S.pile)) S.pile = { love: [], respect: [] };
+  const suit = SUIT_FOR[S.turn];
+  if (!S.pile[suit].length) S.pile[suit] = buildPile(suit);
+  S.current = S.pile[suit].pop();
+}
+
+/* Sound: tiny synth tones, started from taps */
+let ac = null;
+function tone(freq, dur, type = "sine", vol = .15) {
+  if (!S.sound) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = freq; g.gain.value = vol;
+    g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + dur);
+    o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + dur);
+  } catch (e) {}
+}
+const sfx = {
+  good() { tone(660, .12); setTimeout(() => tone(990, .16), 90); },
+  buzz() { tone(110, .45, "sawtooth", .12); },
+  skip() { tone(330, .1, "triangle"); },
+  end() { tone(880, .2); setTimeout(() => tone(660, .2), 200); setTimeout(() => tone(440, .4), 400); },
+  tick() { tone(1200, .04, "square", .05); },
+};
+
+function cardHTML(c, extra = "", sample = false) {
+  const love = c.suit === "love";
+  return `<div class="card ${c.suit} ${extra}" id="card">
+    ${sample ? '<span class="sample-tag">Sample card</span>' : ""}
+    <div class="card-head">
+      <div class="meta"><span>${c.suit === "sample" ? "Practice card" : love ? "Love for Her" : "Respect for Him"}</span>${c.suit === "sample" ? `<span style="display:flex;gap:4px">${HEART}${BOW}</span>` : love ? HEART : BOW}</div>
+      <div class="word">${esc(c.word)}</div>
+    </div>
+    <div class="card-body">
+      <div class="lbl">Don't say</div>
+      <ul class="taboo">${c.taboo.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+    </div>
+    <div class="card-foot">${c.id}</div>
+  </div>`;
+}
+
+function renderBoard() {
+  [0, 1].forEach(i => {
+    $("n" + i).textContent = S.teams[i] || ["Husbands", "Wives"][i];
+    $("s" + i).textContent = S.scores[i];
+    $("t" + i).classList.toggle("active", S.phase !== "setup" && S.phase !== "over" && S.turn === i);
+  });
+  $("restartBtn").hidden = S.phase === "setup" || !!S.confirm;
+  $("soundBtn").textContent = S.sound ? "Sound on" : "Sound off";
+  $("soundBtn").setAttribute("aria-pressed", S.sound);
+  $("deckBtn").textContent = S.view === "deck" ? "Back to game" : "All 50 cards";
+}
+
+function segHTML(name, opts, val) {
+  return `<div class="seg" role="group">${opts.map(([v, l]) =>
+    `<button type="button" data-set="${name}" data-val="${v}" aria-pressed="${String(v) === String(val)}">${l}</button>`).join("")}</div>`;
+}
+
+function render() {
+  renderBoard();
+  const scr = $("screen");
+  if (S.view === "deck") { scr.innerHTML = deckView(); return; }
+  if (S.confirm) {
+    scr.innerHTML = `
+      <section class="panel" style="text-align:center;align-items:center">
+        <h2>Restart the game?</h2>
+        <p>Both scores go back to 0, the cards get reshuffled, and ${esc(S.teams[0])} goes first. Team names and turn length stay the same.</p>
+        <div class="row" style="width:100%">
+          <button class="primary" type="button" data-act="restartYes">Yes, restart</button>
+          <button class="secondary" type="button" data-act="restartNo">Keep playing</button>
+        </div>
+        <button class="ghost" type="button" data-act="restartSetup">Change teams or settings instead</button>
+      </section>`;
+    return;
+  }
+  const team = esc(S.teams[S.turn]);
+  if (S.phase === "setup") {
+    scr.innerHTML = `
+      <section class="panel">
+        <h2>Husbands, love your wives. Wives, respect your husbands. Now describe it without the easy words.</h2>
+        <p>Inspired by Ephesians 5:33. Team 1, the Husbands, plays the rose <b>Love for Her</b> cards. Team 2, the Wives, plays the blue <b>Respect for Him</b> cards.</p>
+        <h3 class="sub">How to play</h3>
+        <p>Start with the practice card. It isn't in either deck, so you can try it out together before the real game.</p>
+        <div class="stage">${cardHTML(SAMPLE, "", true)}</div>
+        <div class="example">
+          <div><span class="tag ok">Good clue</span>"After dinner, we order one slice and ask for two forks."</div>
+          <div><span class="tag no">Taboo!</span>"It's when you split a piece of cake." That clue uses <b>split</b> and <b>cake</b>, so it costs a point.</div>
+        </div>
+        <ol class="rules">
+          <li>The <b>clue-giver</b> holds the phone and gets their team to guess the big word.</li>
+          <li>Don't say anything on the <b>"Don't say"</b> list, or any part of the big word.</li>
+          <li>No gestures, rhymes, or "sounds like." The other team watches for slips and calls <b>Taboo</b>.</li>
+          <li><b>+1</b> for each correct guess, <b>−1</b> for each Taboo. Skips cost nothing.</li>
+        </ol>
+        <h3 class="sub">Set up your game</h3>
+        <label class="field"><span>Turn length</span>${segHTML("seconds", [[30, "30 sec"], [60, "60 sec"], [90, "90 sec"]], S.seconds)}</label>
+        <div class="field"><span>Team names</span>
+          <div class="names">
+            <input type="text" id="team0" aria-label="Team 1 name (plays Love for Her cards)" value="${esc(S.teams[0])}" maxlength="24">
+            <input type="text" id="team1" aria-label="Team 2 name (plays Respect for Him cards)" value="${esc(S.teams[1])}" maxlength="24">
+          </div>
+        </div>
+        <button class="primary" type="button" data-act="begin">Start game</button>
+      </section>`;
+  } else if (S.phase === "ready") {
+    scr.innerHTML = `
+      <section class="panel" style="text-align:center;align-items:center">
+        <p>Up next</p>
+        <div class="big">${team}</div>
+        <p style="color:var(--${SUIT_FOR[S.turn]});font-weight:700">Playing ${S.turn === 0 ? "Love for Her" : "Respect for Him"} cards</p>
+        <p>Pick a clue-giver and hand them the phone. Everyone else on ${team} guesses. The other team watches for Taboo words.</p>
+        <button class="primary" type="button" data-act="go">Start ${S.seconds}-second turn</button>
+        <button class="ghost" type="button" data-act="over">End game</button>
+      </section>`;
+  } else if (S.phase === "play") {
+    scr.innerHTML = `
+      <div class="timer"><div class="bar" id="bar"><i id="barfill"></i></div><div class="secs" id="secs">${Math.ceil(S.timeLeft)}</div></div>
+      <div class="stage">${cardHTML(byId[S.current], "enter")}</div>
+      <div class="controls">
+        <button class="btn skip" type="button" data-act="skip">Skip<small>0</small></button>
+        <button class="btn got" type="button" data-act="got">Got it<small>+1</small></button>
+        <button class="btn bz" type="button" data-act="buzz">Taboo!<small>−1</small></button>
+      </div>
+      <div class="kbd"><kbd>S</kbd> skip · <kbd>Space</kbd> got it · <kbd>T</kbd> taboo</div>`;
+    paintTimer();
+  } else if (S.phase === "summary") {
+    const g = S.log.filter(l => l.r === "g").length, b = S.log.filter(l => l.r === "b").length;
+    const net = g - b;
+    scr.innerHTML = `
+      <section class="panel">
+        <p>Time's up for ${team}</p>
+        <div class="big">${net >= 0 ? "+" : "−"}${Math.abs(net)} pts</div>
+        <p>${g} guessed · ${b} Taboo · ${S.log.filter(l => l.r === "s").length} skipped</p>
+        ${S.log.length ? `<ul class="log">${S.log.map(l => `<li>${esc(byId[l.id].word)}<span class="${l.r}">${{ g: "Got it", b: "Taboo", s: "Skipped" }[l.r]}</span></li>`).join("")}</ul>` : ""}
+        <div class="row">
+          <button class="primary" type="button" data-act="next">${esc(S.teams[1 - S.turn])}'s turn</button>
+          <button class="secondary" type="button" data-act="over">End game</button>
+        </div>
+      </section>`;
+  } else if (S.phase === "over") {
+    const [a, b] = S.scores;
+    const msg = a === b ? "It's a tie" : `${esc(S.teams[a > b ? 0 : 1])} wins`;
+    scr.innerHTML = `
+      <section class="panel" style="text-align:center;align-items:center">
+        <p>Final score</p>
+        <div class="big">${msg}</div>
+        <p>${esc(S.teams[0])} ${a} · ${esc(S.teams[1])} ${b}</p>
+        <p>Talk it over: which card would mean the most to your spouse? Ask them, then pick one to do this week.</p>
+        <button class="primary" type="button" data-act="reset">New game</button>
+      </section>`;
+  }
+}
+
+function deckView() {
+  const group = (suit, list) => `
+    <div class="deckhead" style="color:var(--${suit})">${suit === "love" ? HEART.replace("<svg", '<svg fill="currentColor"') : BOW.replace("<svg", '<svg fill="currentColor"')}${suit === "love" ? "Love for Her" : "Respect for Him"} · 25</div>
+    <div class="decklist">${list.map(c => `<div class="mini ${suit}"><b>${esc(c.word)}</b><div>${c.taboo.map(esc).join(" · ")}</div></div>`).join("")}</div>`;
+  return `<section class="panel">
+    <h2>The full deck</h2>
+    <p>Every card in the game, with its five Taboo words.</p>
+    ${group("love", CARDS.filter(c => c.suit === "love"))}
+    ${group("respect", CARDS.filter(c => c.suit === "respect"))}
+  </section>`;
+}
+
+function paintTimer() {
+  const f = $("barfill"), s = $("secs"), bar = $("bar");
+  if (!f) return;
+  f.style.transform = `scaleX(${Math.max(0, S.timeLeft / S.seconds)})`;
+  s.textContent = Math.ceil(S.timeLeft);
+  bar.classList.toggle("low", S.timeLeft <= 10);
+}
+
+function startClock() {
+  stopClock();
+  S.endAt = Date.now() + S.timeLeft * 1000;
+  let lastSec = Math.ceil(S.timeLeft);
+  tick = setInterval(() => {
+    S.timeLeft = Math.max(0, (S.endAt - Date.now()) / 1000);
+    const sec = Math.ceil(S.timeLeft);
+    if (sec !== lastSec && sec <= 5 && sec > 0) sfx.tick();
+    lastSec = sec;
+    paintTimer();
+    if (S.timeLeft <= 0) { stopClock(); sfx.end(); S.phase = "summary"; render(); }
+  }, 100);
+}
+function stopClock() { if (tick) clearInterval(tick); tick = null; }
+
+function answer(r) {
+  if (S.phase !== "play") return;
+  S.log.push({ id: S.current, r });
+  if (r === "g") { S.scores[S.turn]++; sfx.good(); }
+  if (r === "b") { S.scores[S.turn]--; sfx.buzz(); }
+  if (r === "s") sfx.skip();
+  draw();
+  render();
+  const card = $("card");
+  if (card && r !== "s") card.classList.add(r === "g" ? "flash-good" : "flash-buzz");
+}
+
+const acts = {
+  begin() {
+    S.teams = [$("team0").value.trim() || "Husbands", $("team1").value.trim() || "Wives"];
+    S.scores = [0, 0]; S.turn = 0; S.pile = { love: buildPile("love"), respect: buildPile("respect") }; S.phase = "ready";
+  },
+  go() { S.log = []; S.timeLeft = S.seconds; draw(); S.phase = "play"; render(); startClock(); return true; },
+  got() { answer("g"); return true; },
+  buzz() { answer("b"); return true; },
+  skip() { answer("s"); return true; },
+  next() { S.turn = 1 - S.turn; S.phase = "ready"; },
+  over() { stopClock(); S.phase = "over"; },
+  restartYes() { stopClock(); S.confirm = false; S.scores = [0, 0]; S.turn = 0; S.log = []; S.pile = { love: buildPile("love"), respect: buildPile("respect") }; S.phase = "ready"; },
+  restartNo() { S.confirm = false; render(); if (S.phase === "play") startClock(); return true; },
+  restartSetup() { stopClock(); S.confirm = false; acts.reset(); },
+  reset() { const keep = { seconds: S.seconds, teams: S.teams, sound: S.sound }; S = Object.assign(fresh(), keep); },
+};
+
+document.addEventListener("click", e => {
+  const set = e.target.closest("[data-set]");
+  if (set) {
+    if (S.phase === "setup") S.teams = [$("team0").value, $("team1").value];
+    const k = set.dataset.set; S[k] = k === "seconds" ? +set.dataset.val : set.dataset.val;
+    S.timeLeft = S.seconds; render(); return;
+  }
+  const a = e.target.closest("[data-act]");
+  if (a && acts[a.dataset.act]) { if (!acts[a.dataset.act]()) render(); }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "team0" || e.target.id === "team1") {
+    S.teams = [$("team0").value, $("team1").value]; renderBoard();
+  }
+});
+document.addEventListener("keydown", e => {
+  if (S.phase !== "play" || S.view === "deck" || S.confirm || e.target.tagName === "INPUT") return;
+  const k = e.key.toLowerCase();
+  if (k === " " || k === "enter") { e.preventDefault(); answer("g"); }
+  else if (k === "t" || k === "x") answer("b");
+  else if (k === "s") answer("s");
+});
+$("restartBtn").onclick = () => { stopClock(); S.view = null; S.confirm = true; render(); window.scrollTo(0, 0); };
+$("soundBtn").onclick = () => { S.sound = !S.sound; renderBoard(); };
+$("deckBtn").onclick = () => {
+  if (S.view === "deck") { S.view = null; render(); if (S.phase === "play" && !S.confirm) startClock(); }
+  else { if (S.phase === "play") stopClock(); S.view = "deck"; render(); window.scrollTo(0, 0); }
+};
+
+window.claude?.hot?.snapshot?.(() => ({ S: { ...S, phase: S.phase === "play" ? "ready" : S.phase } }));
+function start() { render(); }
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start();
+</script>
+
+</body>
+</html>
